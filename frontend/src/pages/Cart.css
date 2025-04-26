@@ -1,0 +1,16 @@
+.cart-btn {
+    background-color: #800080; /* Purple color */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 18px;
+    margin: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .cart-btn:hover {
+    background-color: #a020f0; /* Lighter purple on hover */
+  }
+  
+  
