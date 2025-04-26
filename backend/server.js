@@ -5,16 +5,17 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
+// CORS setup
 app.use(cors({
-    origin: 'https://toykart.vercel.app', // ✅ Use your frontend's URL without the trailing slash
+    origin: 'https://toykart.vercel.app',  // ✅ frontend deployed link
     credentials: true
 }));
+
 app.use(express.json());
 
-// Debugging logs
+// Debugging logs (optional, you can remove in production)
 app.use((req, res, next) => {
-    console.log(`Incoming Request: ${req.method} ${req.url}`);
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
 });
 
@@ -32,7 +33,6 @@ app.use('/api/checkout', checkoutRoute);
 
 // MongoDB Atlas Connection
 const mongoURI = process.env.MONGO_URI;
-console.log('MongoDB URI:', mongoURI); // Debugging DB URI
 
 mongoose.connect(mongoURI, {
     useNewUrlParser: true,
@@ -40,16 +40,19 @@ mongoose.connect(mongoURI, {
 })
 .then(() => {
     console.log('✅ Connected to MongoDB Atlas');
+    // Start server **only after MongoDB is connected**
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on Render on port ${PORT}`);
+    });
 })
 .catch(err => {
-    console.error('❌ MongoDB connection error:', err);
+    console.error('❌ MongoDB connection error:', err.message);
     process.exit(1);
 });
 
-// Error handling middleware
+// Global Error Handler
 app.use((err, req, res, next) => {
-    console.error('❌ Error:', err.message);
+    console.error('❌ Error:', err.stack);
     res.status(500).json({ msg: 'Internal Server Error' });
 });
