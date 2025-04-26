@@ -6,8 +6,10 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors());
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({
+    origin: 'https://toykart.vercel.app', // ✅ Use your frontend's URL without the trailing slash
+    credentials: true
+}));
 app.use(express.json());
 
 // Debugging logs
@@ -28,7 +30,7 @@ app.use('/api/products', productRoute);
 app.use('/api/cart', cartRoute);
 app.use('/api/checkout', checkoutRoute);
 
-// MongoDB Connection + Server Start
+// MongoDB Atlas Connection
 const mongoURI = process.env.MONGO_URI;
 console.log('MongoDB URI:', mongoURI); // Debugging DB URI
 
@@ -37,12 +39,13 @@ mongoose.connect(mongoURI, {
     useUnifiedTopology: true,
 })
 .then(() => {
-    console.log('✅ MongoDB connected');
-    app.listen(5000, () => console.log('🚀 Server running on port 5000'));
+    console.log('✅ Connected to MongoDB Atlas');
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 })
 .catch(err => {
-    console.error('❌ Error connecting to MongoDB:', err);
-    process.exit(1); // Exit the process in case DB connection fails
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
 });
 
 // Error handling middleware
