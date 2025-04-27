@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Signup.css'; // optional if you want custom CSS
+import './Signup.css'; // optional if you have custom CSS
 
 const Signup = () => {
   const [name, setName] = useState('');
@@ -9,27 +9,39 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const navigate = useNavigate(); // hook for redirection
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!name || !email || !password) {
+      setError('Please fill in all fields.');
+      setMessage('');
+      return;
+    }
+
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/auth/signup`, {
+      const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'; // fallback
+
+      const response = await axios.post(`${apiBaseUrl}/auth/signup`, {
         name,
         email,
         password,
+      }, {
+        headers: { 'Content-Type': 'application/json' }
       });
 
-      setMessage(response.data.msg);
+      setMessage(response.data.msg || 'Signup successful!');
+      setError('');
       setName('');
       setEmail('');
       setPassword('');
-      setError('');
 
       // Redirect to login after 2 seconds
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      setError(err.response?.data?.msg || 'Signup failed');
+      console.error(err); // good for debugging
+      setError(err.response?.data?.msg || 'Signup failed. Please try again.');
       setMessage('');
     }
   };
@@ -39,30 +51,36 @@ const Signup = () => {
       <h2>Signup</h2>
       <form onSubmit={handleSubmit} className="signup-form">
         <div>
-          <label>Name</label>
+          <label htmlFor="name">Name</label>
           <input
+            id="name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            autoComplete="name"
           />
         </div>
         <div>
-          <label>Email</label>
+          <label htmlFor="email">Email</label>
           <input
+            id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="email"
           />
         </div>
         <div>
-          <label>Password</label>
+          <label htmlFor="password">Password</label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoComplete="new-password"
           />
         </div>
         <button type="submit">Sign Up</button>
