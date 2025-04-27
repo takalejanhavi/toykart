@@ -4,15 +4,16 @@ import './Home.css';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
-  const [cart, setCart] = useState({ products: [], totalPrice: 0 }); // safer default
+  const [cart, setCart] = useState({ products: [], totalPrice: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
 
+  // Fetch Cart Data
   const fetchCart = useCallback(async () => {
-    if (!userId) return; // avoid making call if not logged in
+    if (!userId) return; // Avoid fetching cart if user is not logged in
     try {
       const response = await axios.get(`https://toykart-2.onrender.com/api/cart/view/${userId}`, {
         headers: {
@@ -22,10 +23,11 @@ const Home = () => {
       setCart(response.data || { products: [], totalPrice: 0 });
     } catch (err) {
       console.error('Error fetching cart:', err);
-      setCart({ products: [], totalPrice: 0 }); // fallback if fetch fails
+      setCart({ products: [], totalPrice: 0 }); // Fallback if cart fetch fails
     }
   }, [userId, token]);
 
+  // Fetch Product List
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -40,9 +42,10 @@ const Home = () => {
     };
 
     fetchProducts();
-    fetchCart(); // always attempt fetching cart, inside handles if user logged in
+    fetchCart(); // Fetch cart data when component mounts
   }, [fetchCart]);
 
+  // Add Product to Cart
   const handleAddToCart = async (productId) => {
     if (!token || !userId) {
       alert("Please login first to add to cart.");
@@ -59,13 +62,16 @@ const Home = () => {
         }
       );
       alert('✅ Product added to cart!');
-      fetchCart();
+      // Optimistically update cart
+      const updatedCart = { ...cart, products: [...cart.products, { productId, quantity: 1 }] };
+      setCart(updatedCart);
     } catch (err) {
       alert("❌ Failed to add to cart");
       console.error(err);
     }
   };
 
+  // Remove Product from Cart
   const handleRemoveFromCart = async (productId) => {
     if (!token || !userId) {
       alert("Please login first.");
@@ -82,7 +88,9 @@ const Home = () => {
         }
       );
       alert('🗑️ Product removed from cart!');
-      fetchCart();
+      // Optimistically update cart
+      const updatedCart = { ...cart, products: cart.products.filter(item => item.productId !== productId) };
+      setCart(updatedCart);
     } catch (err) {
       alert("❌ Failed to remove from cart");
       console.error(err);
